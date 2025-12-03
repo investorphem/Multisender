@@ -47,3 +47,25 @@ npm install
 
 # Run the development server
 npm run dev
+
+Contributing
+
+We welcome contributions! Please open an issue or submit a pull request with any improvements.
+
+License
+
+This project is licensed under the MIT License.
+
+### GitHub Tags (Topics)
+
+
+*   `dapp`
+*   `web3`
+*   `blockchain`
+*   `ethereum`
+*   `base-chain`
+*   `solidity`
+*   `multisender`
+*   `erc20`
+*   `nextjs`
+*   `wagmi`
