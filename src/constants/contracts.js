@@ -5,7 +5,7 @@ export const MULTISENDER_ABI = [{"inputs":[{"internalType":"address","name":"tok
 // Base Mainnet Chain ID is 8453
 // Ethereum Mainnet Chain ID is 1
 export const MULTISENDER_CONTRACTS = {
-  8453: '0xYOUR_DEPLOYED_ADDRESS_ON_BASE_HERE', 
+  8453: '0x1baE4486b6D64A5174D32AFfAC95e5eac4df186C', 
   1: '0xYOUR_DEPLOYED_ADDRESS_ON_ETHEREUM_HERE',
   // Add other chains as needed
 };
