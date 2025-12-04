@@ -5,8 +5,7 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId 
 // CORRECTED PATHS:
 import { MULTISENDER_CONTRACTS, MULTISENDER_ABI, TOKEN_ADDRESS_TO_SEND } from '../../src/constants/contracts'; 
 import { parseEther } from 'viem';
-// Assuming you have the 'cn' utility from your other packages
-import { cn } from '../../src/lib/utils'; 
+// Removed the import for 'cn' from '../../src/lib/utils'
 
 export default function BeautifulMultiSender() {
   const { isConnected } = useAccount();
@@ -29,7 +28,6 @@ export default function BeautifulMultiSender() {
     
     try {
       lines.forEach(line => {
-        // Split by comma or space, remove empty entries
         const parts = line.split(/[,\s]+/).filter(p => p.length > 0); 
         if (parts.length === 2) {
           recipients.push(parts[0]); // Address
@@ -72,6 +70,23 @@ export default function BeautifulMultiSender() {
   }, [isConfirmed, isConfirming, isSending]);
 
 
+  // Helper function for dynamic class names since 'cn' is missing
+  const getButtonClasses = () => {
+      const base = "mt-6 w-full font-bold p-3 rounded-lg transition duration-150 ease-in-out shadow-lg";
+      if (!contractAddress || isSending || isConfirming) {
+          return `${base} bg-gray-500 opacity-50 cursor-not-allowed`;
+      }
+      return `${base} bg-blue-600 hover:bg-blue-700 text-white`;
+  };
+
+  const getStatusClasses = () => {
+      const base = "mt-4 p-3 rounded-lg text-sm";
+      if (isConfirmed) return `${base} bg-green-900`;
+      if (isSending || isConfirming) return `${base} bg-blue-900`;
+      return `${base} bg-gray-700`;
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
       <div className="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md">
@@ -98,21 +113,12 @@ export default function BeautifulMultiSender() {
             <button
               onClick={handleSubmit}
               disabled={!contractAddress || isSending || isConfirming}
-              className={cn(
-                "mt-6 w-full font-bold p-3 rounded-lg transition duration-150 ease-in-out shadow-lg",
-                {"bg-blue-600 hover:bg-blue-700 text-white": contractAddress && !isSending && !isConfirming},
-                {"bg-gray-500 opacity-50 cursor-not-allowed": !contractAddress || isSending || isConfirming}
-              )}
+              className={getButtonClasses()} // Using local helper instead of 'cn'
             >
               {isSending || isConfirming ? 'Processing Transaction...' : 'Execute Batch Send'}
             </button>
 
-            <div className={cn(
-                "mt-4 p-3 rounded-lg text-sm",
-                {"bg-green-900": isConfirmed},
-                {"bg-blue-900": isSending || isConfirming},
-                {"bg-gray-700": !isConfirmed && !isConfirming && !isSending}
-            )}>
+            <div className={getStatusClasses()}> {/* Using local helper instead of 'cn' */}
                 {statusMessage}
             </div>
             {hash && <p className="mt-2 text-xs text-gray-500 truncate">Tx Hash: {hash}</p>}
