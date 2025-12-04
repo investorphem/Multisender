@@ -1,24 +1,54 @@
 'use client'; 
 
-import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
+import { useState, useEffect, useCallback } from 'react';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useBalance } from 'wagmi';
 // CORRECTED PATHS:
-import { MULTISENDER_CONTRACTS, MULTISENDER_ABI, TOKEN_ADDRESS_TO_SEND } from '../../src/constants/contracts'; 
-import { parseEther } from 'viem';
-// Removed the import for 'cn' from '../../src/lib/utils'
+import { MULTISENDER_CONTRACTS, MULTISENDER_ABI } from '../../src/constants/contracts'; 
+import { parseEther, formatUnits } from 'viem';
 
 export default function BeautifulMultiSender() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const { chains, switchChain } = useSwitchChain();
   const [recipientList, setRecipientList] = useState('');
   const [statusMessage, setStatusMessage] = useState('Enter recipients and amounts below.');
+  const [tokens, setTokens] = useState([]); // State to store user's tokens
+  const [selectedTokenAddress, setSelectedTokenAddress] = useState('');
 
   const contractAddress = MULTISENDER_CONTRACTS[chainId];
+  
+  // Fetch native balance (ETH/Base ETH)
+  const { data: nativeBalance } = useBalance({ address });
 
   const { data: hash, writeContract, isPending: isSending } = useWriteContract();
-  
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  // Function to fetch token balances using an API (e.g., Alchemy/Etherscan)
+  // This is where you would integrate an external API to get ALL balances
+  const fetchTokenBalances = useCallback(async () => {
+    if (!address || !chainId || !nativeBalance) return;
+    
+    // Placeholder logic for the native token only for now
+    const nativeToken = {
+        address: 'NATIVE', // Use 'NATIVE' as a special identifier
+        symbol: nativeBalance.symbol,
+        balanceFormatted: nativeBalance.formatted,
+        decimals: nativeBalance.decimals,
+    };
+    setTokens([nativeToken]);
+    setSelectedTokenAddress('NATIVE'); // Select native token by default
+
+    // !!! REPLACE WITH YOUR ALCHEMY API KEY AND CORRECT NETWORK URL TO EXPAND TOKEN LIST !!!
+    // The implementation for fetching all ERC20 tokens is complex and depends on an API service.
+    // The current code just handles the native token.
+  }, [address, chainId, nativeBalance]);
+
+  useEffect(() => {
+    if (isConnected) {
+      fetchTokenBalances();
+    } else {
+        setTokens([]);
+    }
+  }, [isConnected, fetchTokenBalances]);
 
   const handleListChange = (e) => setRecipientList(e.target.value);
 
@@ -27,25 +57,31 @@ export default function BeautifulMultiSender() {
     const recipients = [];
     const amounts = [];
     
+    // Determine decimals based on selected token (default to 18 if native/unknown)
+    const selectedToken = tokens.find(t => t.address === selectedTokenAddress);
+    const decimals = selectedToken ? selectedToken.decimals : 18;
+
+
     try {
       lines.forEach(line => {
         const parts = line.split(/[,\s]+/).filter(p => p.length > 0); 
         if (parts.length === 2) {
           recipients.push(parts[0]); // Address
-          amounts.push(parseEther(parts[1])); // Amount (assuming 18 decimals like ETH)
+          // Use parseUnits for flexibility with different token decimals
+          amounts.push(parseUnits(parts[1], decimals)); 
         }
       });
       return { recipients, amounts };
     } catch (error) {
-        setStatusMessage("Error parsing input. Ensure format is 'address, amount' per line.");
+        setStatusMessage("Error parsing input or invalid amount format.");
         return null;
     }
   };
 
 
   const handleSubmit = async () => {
-    if (!isConnected || !contractAddress || !TOKEN_ADDRESS_TO_SEND) {
-      setStatusMessage("Wallet is disconnected or contract address is missing.");
+    if (!isConnected || !contractAddress || !selectedTokenAddress) {
+      setStatusMessage("Wallet is disconnected or token is not selected.");
       return;
     }
 
@@ -54,13 +90,21 @@ export default function BeautifulMultiSender() {
 
     setStatusMessage(`Sending ${parsedData.recipients.length} payments...`);
     
-    // IMPORTANT: Ensure you have approved the contract to spend your tokens first!
+    // NOTE: If sending NATIVE tokens, the contract needs a different function 
+    // that accepts `msg.value` (ETH attached to the transaction). 
+    // This smart contract only handles ERC20 tokens via `transferFrom`.
+    if (selectedTokenAddress === 'NATIVE') {
+        setStatusMessage("This dApp only supports ERC20 tokens for batch sending, not native ETH/Base ETH yet.");
+        return;
+    }
+
+    // You still need an approval step here for ERC20 tokens before calling sendTokens
 
     writeContract({
       address: contractAddress,
       abi: MULTISENDER_ABI,
       functionName: 'sendTokens',
-      args: [TOKEN_ADDRESS_TO_SEND, parsedData.recipients, parsedData.amounts],
+      args: [selectedTokenAddress, parsedData.recipients, parsedData.amounts],
     });
   };
 
@@ -71,10 +115,10 @@ export default function BeautifulMultiSender() {
   }, [isConfirmed, isConfirming, isSending]);
 
 
-  // Helper function for dynamic class names since 'cn' is missing
+  // Helper function for dynamic class names (since 'cn' is missing)
   const getButtonClasses = () => {
       const base = "mt-6 w-full font-bold p-3 rounded-lg transition duration-150 ease-in-out shadow-lg";
-      if (!contractAddress || isSending || isConfirming) {
+      if (!contractAddress || isSending || isConfirming || selectedTokenAddress === 'NATIVE') {
           return `${base} bg-gray-500 opacity-50 cursor-not-allowed`;
       }
       return `${base} bg-blue-600 hover:bg-blue-700 text-white`;
@@ -100,15 +144,19 @@ export default function BeautifulMultiSender() {
           </div>
         ) : (
           <div>
-            <div className="mb-4 p-3 bg-gray-700 rounded flex justify-between items-center">
-                <span>Network: </span>
+            {/* Token Selector UI */}
+            <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Select Token</label>
                 <select 
-                    value={chainId} 
-                    onChange={(e) => switchChain({ chainId: parseInt(e.target.value) })}
-                    className="bg-gray-600 p-1 rounded text-white"
+                    value={selectedTokenAddress} 
+                    onChange={(e) => setSelectedTokenAddress(e.target.value)}
+                    className="w-full p-2 bg-gray-700 rounded-lg text-white"
                 >
-                    {chains.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
+                    <option value="">Select a token...</option>
+                    {tokens.map(token => (
+                        <option key={token.address} value={token.address}>
+                            {token.symbol} (Balance: {token.balanceFormatted})
+                        </option>
                     ))}
                 </select>
             </div>
@@ -122,13 +170,13 @@ export default function BeautifulMultiSender() {
 
             <button
               onClick={handleSubmit}
-              disabled={!contractAddress || isSending || isConfirming}
-              className={getButtonClasses()} // Using local helper instead of 'cn'
+              disabled={!contractAddress || isSending || isConfirming || !selectedTokenAddress || selectedTokenAddress === 'NATIVE'}
+              className={getButtonClasses()}
             >
               {isSending || isConfirming ? 'Processing Transaction...' : 'Execute Batch Send'}
             </button>
 
-            <div className={getStatusClasses()}> {/* Using local helper instead of 'cn' */}
+            <div className={getStatusClasses()}>
                 {statusMessage}
             </div>
             {hash && <p className="mt-2 text-xs text-gray-500 truncate">Tx Hash: {hash}</p>}
