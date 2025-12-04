@@ -4,8 +4,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { base, mainnet } from 'wagmi/chains' 
-import { createWeb3Modal, WagmiWeb3Modal } from '@web3modal/wagmi'
+// FIXED: Remove the invalid import of WagmiWeb3Modal
+import { createWeb3Modal } from '@web3modal/wagmi'
 
+// --- Configuration Setup ---
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID; 
 
 if (!projectId) {
@@ -16,7 +18,7 @@ const chains = [mainnet, base];
 
 const wagmiConfig = createConfig({
   chains,
-  projectId,
+  projectId, 
   transports: {
     [mainnet.id]: http(),
     [base.id]: http(),
@@ -25,6 +27,7 @@ const wagmiConfig = createConfig({
 
 const queryClient = new QueryClient();
 
+// Create the modal instance once
 createWeb3Modal({
   wagmiConfig,
   projectId,
@@ -35,6 +38,8 @@ createWeb3Modal({
     '--w3m-background-color': '#1f2937',
   }
 });
+// --- End Config Setup ---
+
 
 export function WalletProviders({ children }) {
   return (
@@ -47,7 +52,7 @@ export function WalletProviders({ children }) {
         </header>
         {children}
       </WagmiProvider>
-      <WagmiWeb3Modal />
+      {/* FIXED: The WagmiWeb3Modal component is no longer needed here */}
     </QueryClientProvider>
   )
 }
