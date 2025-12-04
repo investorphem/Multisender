@@ -1,7 +1,7 @@
 'use client'; 
 
 import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
 // CORRECTED PATHS:
 import { MULTISENDER_CONTRACTS, MULTISENDER_ABI, TOKEN_ADDRESS_TO_SEND } from '../../src/constants/contracts'; 
 import { parseEther } from 'viem';
@@ -10,6 +10,7 @@ import { parseEther } from 'viem';
 export default function BeautifulMultiSender() {
   const { isConnected } = useAccount();
   const chainId = useChainId();
+  const { chains, switchChain } = useSwitchChain();
   const [recipientList, setRecipientList] = useState('');
   const [statusMessage, setStatusMessage] = useState('Enter recipients and amounts below.');
 
@@ -99,8 +100,17 @@ export default function BeautifulMultiSender() {
           </div>
         ) : (
           <div>
-            <div className="mb-4 p-3 bg-gray-700 rounded">
-                Current Contract Address: <span className='truncate'>{contractAddress ? contractAddress : 'Unsupported Chain'}</span>
+            <div className="mb-4 p-3 bg-gray-700 rounded flex justify-between items-center">
+                <span>Network: </span>
+                <select 
+                    value={chainId} 
+                    onChange={(e) => switchChain({ chainId: parseInt(e.target.value) })}
+                    className="bg-gray-600 p-1 rounded text-white"
+                >
+                    {chains.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
             </div>
 
             <textarea
