@@ -1,15 +1,13 @@
 'use client';
 
 import { useConnect, useDisconnect, useAccount } from 'wagmi';
-// CORRECTED WAGMI IMPORT:
-import { injected } from 'wagmi/connectors';
-// CORRECTED HELPERS IMPORT PATH:
+// Import injected (for MetaMask/extensions) and walletConnect (for mobile/QR codes)
+import { injected, walletConnect } from 'wagmi/connectors'; 
 import { shortenAddress } from '../../src/utils/helpers'; 
 
 export default function ConnectButton() {
   const { address, isConnected } = useAccount();
-  // Use the 'injected' connector which covers MetaMask, Coinbase Wallet, etc.
-  const { connect } = useConnect({ connector: injected() });
+  const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
 
   if (isConnected) {
@@ -28,12 +26,25 @@ export default function ConnectButton() {
     );
   }
 
+  // Use a map to display available connectors when not connected
   return (
-    <button 
-      className="bg-green-600 hover:bg-green-700 p-2 rounded-lg text-sm transition duration-150" 
-      onClick={() => connect()}
-    >
-      Connect Wallet
-    </button>
+    <div>
+      {/* 
+        The 'connectors' array from useConnect will list all available options based on 
+        your wagmiConfig in providers.jsx (Wagmi automatically detects MetaMask extension). 
+        You still need to include walletConnect in your wagmiConfig for it to show up here.
+      */}
+      {connectors.map((connector) => (
+        <button
+          disabled={!connector.ready}
+          key={connector.id}
+          onClick={() => connect({ connector })}
+          className="bg-green-600 hover:bg-green-700 p-2 rounded-lg text-sm transition duration-150"
+        >
+          Connect {connector.name}
+          {!connector.ready && ' (unsupported)'}
+        </button>
+      ))}
+    </div>
   );
 }
