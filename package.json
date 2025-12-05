@@ -9,15 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
-    "@web3modal/wagmi": "^4.1.13",
     "@tanstack/react-query": "^5.45.1",
+    "@wagmi/chains": "^2.0.0",
+    "@web3modal/wagmi": "^4.1.13",
+    "alchemy-sdk": "^3.1.2",
     "autoprefixer": "^10.4.16",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "ethers": "^6.11.1",
     "lucide-react": "^0.378.0",
     "next": "14.1.0",
     "postcss": "^8.4.31",
@@ -25,10 +28,8 @@
     "react-dom": "18.2.0",
     "tailwind-merge": "^2.2.1",
     "tailwindcss": "^3.4.1",
-    "wagmi": "^2.10.2",
-    "@wagmi/chains": "latest",
     "viem": "^2.16.5",
-    "ethers": "^6.11.1"
+    "wagmi": "^2.10.2"
   },
   "devDependencies": {
     "eslint": "8.56.0",
