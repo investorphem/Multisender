@@ -3,16 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useBalance } from 'wagmi';
 import { Alchemy, Network } from 'alchemy-sdk';
-// CORRECTED PATHS:
 import { MULTISENDER_CONTRACTS, MULTISENDER_ABI } from '../../src/constants/contracts'; 
-import { ERC20_ABI } from '../../src/constants/erc20abi'; // Import the new ABI file
-import { parseUnits, formatUnits, isAddress } from 'viem'; // Import isAddress helper
+import { ERC20_ABI } from '../../src/constants/erc20abi';
+import { parseUnits, formatUnits, isAddress } from 'viem';
 
-// Configure Alchemy (make sure NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
-// NOTE: You must map chain IDs to Alchemy's Network enum here more robustly in a real app.
+// Configure Alchemy (Make sure NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
+// NOTE: This setup needs proper mapping for a production multi-chain application.
 const alchemyConfig = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-  // Defaulting to a mainnet, you need logic to pick the right network dynamically
   network: Network.BASE_MAINNET, 
 };
 const alchemy = new Alchemy(alchemyConfig);
@@ -23,10 +21,10 @@ export default function BeautifulMultiSender() {
   const chainId = useChainId();
   const [recipientList, setRecipientList] = useState('');
   const [statusMessage, setStatusMessage] = useState('Enter recipients and amounts below.');
-  const [allUserTokens, setAllUserTokens] = useState([]); // Master list of all user tokens
-  const [filteredTokens, setFilteredTokens] = useState([]); // List shown in the selector
+  const [allUserTokens, setAllUserTokens] = useState([]); // Master list of all user tokens with balance > 0
+  const [filteredTokens, setFilteredTokens] = useState([]); // List shown in the selector/search results
   const [selectedTokenAddress, setSelectedTokenAddress] = useState('');
-  const [tokenSearchTerm, setTokenSearchTerm] = useState(''); // New state for search input
+  const [tokenSearchTerm, setTokenSearchTerm] = useState(''); 
   const [isApproved, setIsApproved] = useState(false); 
   const [totalAmountNeeded, setTotalAmountNeeded] = useState(0n); 
 
@@ -41,7 +39,7 @@ export default function BeautifulMultiSender() {
   const { isLoading: isApprovalConfirming, isSuccess: isApprovalConfirmed } = useWaitForTransactionReceipt({ hash: approvalHash });
 
 
-  // --- Fetching Logic (runs once on connect) ---
+  // --- Fetching Logic (Only non-zero balances) ---
   const fetchTokenBalances = useCallback(async () => {
     if (!address || !chainId || !nativeBalance || !alchemyConfig.apiKey) return;
 
@@ -54,7 +52,8 @@ export default function BeautifulMultiSender() {
           decimals: nativeBalance.decimals,
           balanceRaw: nativeBalance.value,
       };
-
+      
+      // Filter the initial response to only include non-zero balances
       const balancesResponse = await alchemy.core.getTokenBalances(address);
       const nonZeroBalances = balancesResponse.tokenBalances.filter((token) => token.tokenBalance !== '0');
 
@@ -64,15 +63,15 @@ export default function BeautifulMultiSender() {
           address: token.contractAddress,
           symbol: metadata.symbol,
           name: metadata.name,
-          decimals: metadata.decimals,
+          decimals: metadata.decimals || 18,
           balanceRaw: BigInt(token.tokenBalance),
           balanceFormatted: formatUnits(BigInt(token.tokenBalance), metadata.decimals || 18),
         };
       }));
 
-      const finalTokens = [nativeToken, ...tokenDetails.filter(t => t.symbol)];
+      const finalTokens = [nativeToken, ...tokenDetails.filter(t => t.symbol && t.balanceRaw > 0n)];
       setAllUserTokens(finalTokens);
-      setFilteredTokens(finalTokens); // Initially show all tokens
+      setFilteredTokens(finalTokens);
       setSelectedTokenAddress('NATIVE');
     } catch (error) {
       console.error("Failed to fetch token balances:", error);
@@ -90,16 +89,14 @@ export default function BeautifulMultiSender() {
   }, [isConnected, fetchTokenBalances]);
 
 
-  // --- Search Logic (runs as user types) ---
+  // --- Search Logic ---
   useEffect(() => {
     if (!tokenSearchTerm) {
         setFilteredTokens(allUserTokens);
         return;
     }
-
     const lowerCaseSearch = tokenSearchTerm.toLowerCase();
     const results = allUserTokens.filter(token => {
-        // Search by symbol, name, or contract address
         return (
             token.symbol?.toLowerCase().includes(lowerCaseSearch) ||
             token.name?.toLowerCase().includes(lowerCaseSearch) ||
@@ -110,7 +107,7 @@ export default function BeautifulMultiSender() {
   }, [tokenSearchTerm, allUserTokens]);
 
 
-  // --- Handlers & Logic (rest remains similar but cleaner) ---
+  // --- Handlers & Logic ---
   const handleListChange = (e) => {
     setRecipientList(e.target.value);
     setIsApproved(false); // Reset approval status if input changes
@@ -119,102 +116,130 @@ export default function BeautifulMultiSender() {
   const handleTokenSelectChange = (e) => {
     setSelectedTokenAddress(e.target.value);
     setIsApproved(false); // Reset approval status on token change
-    // Optional: Clear search bar after selection for cleaner UI
-    // setTokenSearchTerm(''); 
   }
 
   const parseInput = () => {
-    // ... (rest of the parseInput function remains identical to the previous perfect code) ...
+    // This logic calculates totalAmountNeeded which is used for validation and approval
     const lines = recipientList.trim().split('\n');
     const amounts = [];
     const recipients = [];
     let totalAmount = 0n;
 
     if (!selectedToken) return null;
-    const decimals = selectedToken.decimals || 18;
+    const decimals = selectedToken.decimals;
 
-    try {
-      lines.forEach(line => {
+    lines.forEach(line => {
         const parts = line.split(/[,\s]+/).filter(p => p.length > 0); 
-        if (parts.length === 2 && isAddress(parts[0])) { // Basic address validation added
-          recipients.push(parts[0]);
-          const amountParsed = parseUnits(parts[1], decimals);
-          amounts.push(amountParsed);
-          totalAmount = totalAmount + amountParsed; 
+        if (parts.length === 2 && isAddress(parts[0])) { // Validate address
+            try {
+                const amountParsed = parseUnits(parts[1], decimals);
+                recipients.push(parts[0]);
+                amounts.push(amountParsed);
+                totalAmount = totalAmount + amountParsed;
+            } catch (e) {
+                // Handle invalid number formats silently in parser, user sees general error later
+            }
         }
-      });
-      setTotalAmountNeeded(totalAmount); 
-      return { recipients, amounts, totalAmount };
-    } catch (error) {
-        setStatusMessage("Error parsing input or invalid amount format.");
-        return null;
-    }
+    });
+    setTotalAmountNeeded(totalAmount); 
+    return { recipients, amounts, totalAmount };
   };
 
   const handleApprove = async () => {
-    // ... (rest of handleApprove remains identical) ...
     if (!contractAddress || !selectedToken || selectedTokenAddress === 'NATIVE') {
         setStatusMessage("Cannot approve native tokens or contract address is missing.");
         return;
     }
-    const parsed = parseInput(); 
-    if (!parsed || parsed.recipients.length === 0) return;
-    const amountToApprove = parsed.totalAmount;
-
-    setStatusMessage(`Requesting approval for ${formatUnits(amountToApprove, selectedToken.decimals)} ${selectedToken.symbol}...`);
     
+    const parsed = parseInput(); 
+    if (!parsed || parsed.recipients.length === 0 || parsed.totalAmount === 0n) return;
+    
+    // Check if user balance is enough for approval (prevents useless gas spend)
+    if (selectedToken.balanceRaw < parsed.totalAmount) {
+        setStatusMessage("Error: Insufficient token balance to cover the total send amount.");
+        return;
+    }
+
+    setStatusMessage(`Requesting approval for ${formatUnits(parsed.totalAmount, selectedToken.decimals)} ${selectedToken.symbol}...`);
+    
+    // Call the approve function on the TOKEN contract
     approveContract({
-        address: selectedTokenAddress, // Token contract address
-        abi: ERC20_ABI, // Use the standard ERC20 ABI
+        address: selectedTokenAddress, 
+        abi: ERC20_ABI, 
         functionName: 'approve',
-        args: [contractAddress, amountToApprove], // Approve the multisender contract
+        args: [contractAddress, parsed.totalAmount], 
     });
   };
 
   const handleSubmit = async () => {
-    // ... (rest of handleSubmit remains identical, assuming your contract handles native differently) ...
     if (!isConnected || !contractAddress || !selectedToken) {
-        setStatusMessage("Wallet is disconnected or token is not selected.");
-        return;
+      setStatusMessage("Wallet is disconnected or token is not selected.");
+      return;
     }
+
     const parsedData = parseInput();
-    if (!parsedData || parsedData.recipients.length === 0) return;
+    if (!parsedData || parsedData.recipients.length === 0 || parsedData.totalAmount === 0n) return;
 
     if (selectedTokenAddress === 'NATIVE') {
-        setStatusMessage("Native ETH sending is not implemented in the current smart contract integration yet.");
+        setStatusMessage("Native ETH sending is not implemented in this version.");
         return;
     }
-    if (!isApproved || selectedToken.balanceRaw < parsedData.totalAmount) {
-        setStatusMessage(!isApproved ? "Please approve the contract first (Step 1)." : "Error: Insufficient token balance.");
+
+    if (!isApproved) {
+        setStatusMessage("Please complete step 1: Approve the contract to move your tokens.");
         return;
     }
 
     setStatusMessage(`Sending ${parsedData.recipients.length} payments of ${selectedToken.symbol}...`);
 
     writeContract({
-        address: contractAddress,
-        abi: MULTISENDER_ABI,
-        functionName: 'sendTokens',
-        args: [selectedTokenAddress, parsedData.recipients, parsedData.amounts],
+      address: contractAddress,
+      abi: MULTISENDER_ABI,
+      functionName: 'sendTokens',
+      args: [selectedTokenAddress, parsedData.recipients, parsedData.amounts],
     });
   };
   
-  // --- UI Effects & Status Messages (remain identical) ---
+  // --- UI Effects & Status Messages ---
   useEffect(() => {
-    if (isConfirmed || isApprovalConfirmed) setStatusMessage("Transaction successful!");
+    // This effect ensures the UI reacts correctly after an approval transaction is confirmed
+    if (isApprovalConfirmed) {
+        setIsApproved(true); // This is key to enabling the main send button
+        setStatusMessage("Approval successful! You can now proceed to Step 2: Execute Batch Send.");
+    }
+    if (isConfirmed) setStatusMessage("Transaction successful!");
     if (isConfirming || isApprovalConfirming) setStatusMessage("Waiting for transaction confirmation...");
     if (isSending || isApproving) setStatusMessage("Check your wallet to confirm the transaction...");
     if (sendError || approveError || confirmError) setStatusMessage(`Error: ${sendError?.shortMessage || approveError?.shortMessage || confirmError?.shortMessage || "An unknown error occurred."}`);
   }, [isConfirmed, isConfirming, isSending, isApproving, isApprovalConfirmed, sendError, approveError, confirmError]);
 
-  useEffect(() => {
-    setIsApproved(false);
-  }, [selectedTokenAddress]);
-
 
   // Helper functions for dynamic class names (remain identical)
-  const getStatusClasses = () => { /* ... */ };
-  const getButtonClasses = (isMainButton = false) => { /* ... */ };
+  const getStatusClasses = () => {
+      const base = "mt-4 p-3 rounded-lg text-sm";
+      if (isConfirmed || isApprovalConfirmed) return `${base} bg-green-900`;
+      if (sendError || approveError || confirmError) return `${base} bg-red-900`;
+      if (isSending || isConfirming || isApproving || isApprovalConfirming) return `${base} bg-blue-900`;
+      return `${base} bg-gray-700`;
+  };
+  
+  const getButtonClasses = (isMainButton = false) => {
+    const base = "mt-4 w-full font-bold p-3 rounded-lg transition duration-150 ease-in-out shadow-lg";
+    
+    // Main button disabled conditions
+    const isMainDisabled = !contractAddress || !selectedTokenAddress || totalAmountNeeded === 0n || isSending || isConfirming || isApproving || isApprovalConfirming || (!isApproved && selectedTokenAddress !== 'NATIVE');
+    
+    // Approval button disabled conditions
+    const isApprovalDisabled = !selectedTokenAddress || selectedTokenAddress === 'NATIVE' || totalAmountNeeded === 0n || isApproving || isApprovalConfirming;
+
+    if (isMainButton) {
+        if (isMainDisabled) return `${base} bg-gray-500 opacity-50 cursor-not-allowed`;
+        return `${base} bg-blue-600 hover:bg-blue-700 text-white`;
+    } else { // Approval button
+        if (isApprovalDisabled) return `${base} bg-gray-500 opacity-50 cursor-not-allowed`;
+        return `${base} bg-yellow-600 hover:bg-yellow-700 text-gray-900`;
+    }
+  };
 
 
   return (
@@ -229,11 +254,9 @@ export default function BeautifulMultiSender() {
           </div>
         ) : (
           <div>
-            {/* Token Selector UI with Search */}
             <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Search & Select Token</label>
                 
-                {/* Search Input Field */}
                 <input
                     type="text"
                     placeholder="Search by name, symbol, or address..."
@@ -242,7 +265,6 @@ export default function BeautifulMultiSender() {
                     onChange={(e) => setTokenSearchTerm(e.target.value)}
                 />
 
-                {/* Dropdown Menu (only shows filtered tokens) */}
                 <select 
                     value={selectedTokenAddress} 
                     onChange={handleTokenSelectChange}
@@ -264,24 +286,22 @@ export default function BeautifulMultiSender() {
               onChange={handleListChange}
             />
             
-            {/* Step 1: Approval Button (Conditional Display) */}
+            {/* Step 1: Approval Button (Only appears when needed) */}
             {selectedTokenAddress && selectedTokenAddress !== 'NATIVE' && !isApproved && totalAmountNeeded > 0n && (
                 <button
                     onClick={handleApprove}
-                    disabled={isApproving || isApprovalConfirming || !selectedTokenAddress || totalAmountNeeded === 0n}
                     className={getButtonClasses(false)}
                 >
                     {isApproving || isApprovalConfirming ? 'Confirming Approval...' : '1. Approve Contract to Spend Tokens'}
                 </button>
             )}
 
-            {/* Step 2: Main Send Button */}
+            {/* Step 2: Main Send Button (Should now enable correctly after approval) */}
             <button
               onClick={handleSubmit}
-              disabled={!contractAddress || isSending || isConfirming || !selectedTokenAddress || totalAmountNeeded === 0n || (!isApproved && selectedTokenAddress !== 'NATIVE')}
               className={getButtonClasses(true)}
             >
-              {isSending || isConfirming ? 'Processing Transaction...' : (selectedTokenAddress === 'NATIVE' ? 'Native Send (Disabled)' : '2. Execute Batch Send')}
+              {isSending || isConfirming ? 'Processing Transaction...' : 'Execute Batch Send'}
             </button>
 
             <div className={getStatusClasses()}>
