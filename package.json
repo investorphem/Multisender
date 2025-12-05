@@ -14,7 +14,7 @@
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
     "@tanstack/react-query": "^5.45.1",
-    "@wagmi/chains": "^2.0.0",
+    "@wagmi/chains": "latest",
     "@web3modal/wagmi": "^4.1.13",
     "alchemy-sdk": "^3.1.2",
     "autoprefixer": "^10.4.16",
