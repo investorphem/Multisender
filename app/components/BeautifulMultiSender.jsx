@@ -15,10 +15,9 @@ const alchemyConfig = {
 };
 const alchemy = new Alchemy(alchemyConfig);
 
-// ... (TokenSelectorModal component code remains exactly the same as the previous response) ...
+// --- Token Selector Modal Component (UI remains the same) ---
 const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onSelect, searchTerm, onSearchChange }) => {
   if (!isOpen) return null;
-  // ... (JSX for the modal remains the same) ...
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
@@ -74,6 +73,7 @@ const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onS
     </div>
   );
 };
+// --- End Token Selector Modal Component ---
 
 
 export default function BeautifulMultiSender() {
@@ -86,7 +86,7 @@ export default function BeautifulMultiSender() {
   const [selectedTokenAddress, setSelectedTokenAddress] = useState('');
   const [tokenSearchTerm, setTokenSearchTerm] = useState(''); 
   const [isApproved, setIsApproved] = useState(false); 
-  const [totalAmountNeeded, setTotalAmountNeeded] = useState(0n); 
+  const [totalAmountNeeded, setTotalAmountNeeded] = useState(0n); // Key state
   const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const contractAddress = MULTISENDER_CONTRACTS[chainId];
@@ -99,10 +99,11 @@ export default function BeautifulMultiSender() {
   const { isLoading: isApprovalConfirming, isSuccess: isApprovalConfirmed } = useWaitForTransactionReceipt({ hash: approvalHash });
 
 
-  // ... (fetchTokenBalances, search logic, handleListChange, handleTokenSelect, parseInput functions remain the same) ...
+  // --- Fetching Logic (Only non-zero balances) ---
   const fetchTokenBalances = useCallback(async () => {
     if (!address || !chainId || !nativeBalance || !alchemyConfig.apiKey) return;
     try {
+      // ... (fetching logic remains the same) ...
       const nativeToken = { address: 'NATIVE', symbol: nativeBalance.symbol, name: 'Native ' + nativeBalance.symbol, balanceFormatted: nativeBalance.formatted, decimals: nativeBalance.decimals, balanceRaw: nativeBalance.value, };
       const balancesResponse = await alchemy.core.getTokenBalances(address);
       const nonZeroBalances = balancesResponse.tokenBalances.filter((token) => token.tokenBalance !== '0');
@@ -120,6 +121,8 @@ export default function BeautifulMultiSender() {
     else { setAllUserTokens([]); setFilteredTokens([]); }
   }, [isConnected, fetchTokenBalances]);
 
+
+  // --- Search Logic ---
   useEffect(() => {
     if (!tokenSearchTerm) return setFilteredTokens(allUserTokens);
     const lowerCaseSearch = tokenSearchTerm.toLowerCase();
@@ -129,93 +132,124 @@ export default function BeautifulMultiSender() {
     setFilteredTokens(results);
   }, [tokenSearchTerm, allUserTokens]);
 
+
+  // --- Handlers & Logic ---
+
+  // CRITICAL CHANGE: parseInput is called immediately here
   const handleListChange = (e) => {
-    setRecipientList(e.target.value);
+    const newListContent = e.target.value;
+    setRecipientList(newListContent);
     setIsApproved(false); 
-    parseInput(e.target.value); 
+    parseInput(newListContent, selectedToken); // Pass the current list content and selected token context
   }
 
   const handleTokenSelect = (address) => {
     setSelectedTokenAddress(address);
     setIsApproved(false);
-    parseInput(recipientList);
+    // Find the newly selected token immediately for the next parseInput call
+    const newlySelectedToken = allUserTokens.find(t => t.address === address);
+    parseInput(recipientList, newlySelectedToken);
   }
 
-  const parseInput = (listContent = recipientList) => {
+  // Helper function to calculate total amount needed from the input list
+  const parseInput = (listContent, tokenContext) => {
     const lines = listContent.trim().split('\n');
-    const recipients = [];
-    const amounts = [];
     let totalAmount = 0n;
-    const decimals = selectedToken?.decimals || 18; 
+    // Use tokenContext if provided, otherwise use current state (which might be slightly delayed)
+    const decimals = tokenContext?.decimals || selectedToken?.decimals || 18; 
 
     lines.forEach(line => {
         const parts = line.split(/[,\s]+/).filter(p => p.length > 0); 
         if (parts.length === 2 && isAddress(parts)) { 
             try {
-                const amountParsed = parseUnits(parts, decimals);
-                recipients.push(parts); amounts.push(amountParsed); totalAmount = totalAmount + amountParsed;
+                const amountParsed = parseUnits(parts[1], decimals); // Ensure parsing the amount part
+                totalAmount = totalAmount + amountParsed;
             } catch (e) { /* invalid number, ignore line */ }
         }
     });
+    // Update the state used by the button logic
     setTotalAmountNeeded(totalAmount); 
-    return { recipients, amounts, totalAmount };
+    // Return total amount for immediate use in handlers
+    return totalAmount;
   };
-
 
   const handleApprove = async () => {
     if (!contractAddress || !selectedToken || selectedTokenAddress === 'NATIVE') { 
         return setStatusMessage("Cannot approve native tokens or contract address is missing."); 
     }
     
-    const parsed = parseInput(); 
-    if (!parsed || parsed.totalAmount === 0n) return;
+    // Use the value already calculated and stored in state
+    const amountToApprove = totalAmountNeeded; 
     
-    if (selectedToken.balanceRaw < parsed.totalAmount) {
+    if (amountToApprove === 0n) return;
+
+    if (selectedToken.balanceRaw < amountToApprove) {
         return setStatusMessage("Error: Insufficient token balance to cover the total send amount.");
     }
 
-    setStatusMessage(`Requesting approval for ${formatUnits(parsed.totalAmount, selectedToken.decimals)} ${selectedToken.symbol}...`);
+    setStatusMessage(`Requesting approval for ${formatUnits(amountToApprove, selectedToken.decimals)} ${selectedToken.symbol}...`);
     
-    // *** DEBUGGING LOGS ADDED HERE ***
     console.log("Attempting Approval with parameters:", {
         tokenAddress: selectedTokenAddress,
         spenderAddress: contractAddress,
-        amountRaw: parsed.totalAmount.toString(),
-        amountFormatted: formatUnits(parsed.totalAmount, selectedToken.decimals),
-        abi: ERC20_ABI // Ensure this ABI is correct
+        amountRaw: amountToApprove.toString(),
+        amountFormatted: formatUnits(amountToApprove, selectedToken.decimals),
     });
 
     approveContract({
         address: selectedTokenAddress, 
         abi: ERC20_ABI, 
         functionName: 'approve',
-        args: [contractAddress, parsed.totalAmount], 
+        args: [contractAddress, amountToApprove], 
     });
   };
 
-  // ... (handleSubmit, useEffects for status, and helper functions remain the same) ...
   const handleSubmit = async () => {
     if (!isConnected || !selectedToken) return setStatusMessage("Wallet disconnected or token not selected.");
-    const parsedData = parseInput();
-    if (!parsedData || parsedData.totalAmount === 0n) return setStatusMessage("Please enter valid recipients and amounts.");
+    
+    // Use the value already calculated and stored in state
+    const amountToSend = totalAmountNeeded;
+    
+    if (amountToSend === 0n) return setStatusMessage("Please enter valid recipients and amounts.");
     if (selectedTokenAddress === 'NATIVE') return setStatusMessage("Native ETH sending is not implemented in this version.");
     if (!isApproved) return setStatusMessage("Please complete step 1: Approve the contract to move your tokens.");
     
-    setStatusMessage(`Sending ${parsedData.recipients.length} payments of ${selectedToken.symbol}...`);
+    // Recalculate full data structure for the actual contract call arguments
+    const parsedData = (listContent) => {
+        const lines = listContent.trim().split('\n');
+        const recipients = [];
+        const amounts = [];
+        const decimals = selectedToken?.decimals || 18; 
+        lines.forEach(line => {
+            const parts = line.split(/[,\s]+/).filter(p => p.length > 0); 
+            if (parts.length === 2 && isAddress(parts)) { 
+                recipients.push(parts[0]);
+                amounts.push(parseUnits(parts[1], decimals));
+            }
+        });
+        return { recipients, amounts };
+    };
+    const finalArgs = parsedData(recipientList);
+
+
+    setStatusMessage(`Sending ${finalArgs.recipients.length} payments of ${selectedToken.symbol}...`);
     writeContract({
-      address: contractAddress, abi: MULTISENDER_ABI, functionName: 'sendTokens', args: [selectedTokenAddress, parsedData.recipients, parsedData.amounts],
+      address: contractAddress, 
+      abi: MULTISENDER_ABI, 
+      functionName: 'sendTokens', 
+      args: [selectedTokenAddress, finalArgs.recipients, finalArgs.amounts],
     });
   };
   
+  // ... (UI effects and helper functions remain the same) ...
   useEffect(() => {
     if (isApprovalConfirmed) { setIsApproved(true); setStatusMessage("Approval successful! You can now proceed to Step 2: Execute Batch Send."); }
     if (isConfirmed) setStatusMessage("Transaction successful!");
     if (isConfirming || isApprovalConfirming) setStatusMessage("Waiting for transaction confirmation...");
     if (isSending || isApproving) setStatusMessage("Check your wallet to confirm the transaction...");
-    // Use the specific error object message for better debugging
     if (sendError || approveError || confirmError) {
         console.error("Wagmi Error Details:", sendError || approveError || confirmError);
-        setStatusMessage(`Error: ${sendError?.shortMessage || approveError?.shortMessage || confirmError?.shortMessage || sendError?.message || "An unknown error occurred. Check Console for details."}`);
+        setStatusMessage(`Error: ${sendError?.shortMessage || approveError?.shortMessage || confirmError?.shortMessage || "An unknown error occurred. Check Console for details."}`);
     }
   }, [isConfirmed, isConfirming, isSending, isApproving, isApprovalConfirmed, sendError, approveError, confirmError]);
 
@@ -297,7 +331,7 @@ export default function BeautifulMultiSender() {
               onChange={handleListChange}
             />
             
-            {/* Step 1: Approval Button (Conditional Display) */}
+            {/* Step 1: Approval Button (Conditional Display, now correctly reacting to input) */}
             {selectedTokenAddress && selectedTokenAddress !== 'NATIVE' && !isApproved && totalAmountNeeded > 0n && (
                 <button
                     onClick={handleApprove}
