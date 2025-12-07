@@ -3,12 +3,14 @@ import './globals.css';
 import { WalletProviders } from './providers';
 
 export const metadata = {
-  title: 'Multi-Sender DAp
-  description: 'Send batch tokelly Chain',
-export default function RootLayout({child }) {
-  return
+  title: 'Multi-Sender DApp',
+  description: 'Send batch tokens easily on Base Chain',
+};
+
+export default function RootLayout({ children }) {
+  return (
     <html lang="en">
-      <body
+      <body>
         <WalletProviders>
           {children} 
         </WalletProviders>
