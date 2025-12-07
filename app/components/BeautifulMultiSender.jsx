@@ -6,7 +6,7 @@ import { Alchemy, Network } from 'alchemy-sdk';
 import { MULTISENDER_CONTRACTS, MULTISENDER_ABI } from '../../src/constants/contracts'; 
 import { ERC20_ABI } fr '../../src/constants/erc20abi';
 import { parseUnits, fornits, isAddress } from 'viem';
-import { ChevronDown, X, Search, DollarSign } from 'lucide-react'; 
+import { ChevronDown, X, Sea, DollarSign } from 'lucide-react'; 
 
 // Configure Ahemy (Make s NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
 const alchemyConfig = {
