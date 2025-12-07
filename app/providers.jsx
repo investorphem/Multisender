@@ -3,7 +3,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagm
-import { base, innet } from 'wagmi/chains' 
+import { base, innt } from 'wagmi/chains' 
 // FIXED: Remove the invalid import of WagmiWeb3Mod
 import { createb3Modal } om '@web3modal/wagmi'
 
