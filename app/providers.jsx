@@ -12,7 +12,6 @@ const projectId  process.env.NEXT_PUBLIC_WALLET_CONNECROJECT_ID;
 
 if (!projectId) {
     console.error('NEXT_PUBLIC_WALLET_CNNECT_PROJECT_ID is not defined.');
-}
 
 const chains = [mainnet, base];
 
