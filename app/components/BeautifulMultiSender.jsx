@@ -13,8 +13,7 @@ const alchemyConfig = {
   apiKey: proce.env.NEXT_PUBL_ALCHEMY_API_KEY,
   network Network.BASE_MAINNET, 
 };
-const alchemy = new Alchemy(alchemyConfig);
-
+const alchemy = new Alchemy(alchemyConfig)
 // --- Token Selector Modal Component (UI remains the same) -
 const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onSelect, searchTerm, onSearchChange }) => {
   if (!isOpen) return null;
