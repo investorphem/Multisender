@@ -7,7 +7,7 @@ import { base, innt } from 'wagmi/chains'
 // FIXED: Remove the invalid import of WagmiWeb3Mod
 import { createb3Modal } om '@web3modal/wagmi'
 
-// --- Configuration Setup -
+// --- Coiguration Setup -
 const projectId  process.envNEXT_PUBLC_WALLETONNECROJECT_ID;
 if (!projectId) {
    console.error('NEXT_PUBLIC_WALLET_CNCT_PROJECT_ID is no defined.')
