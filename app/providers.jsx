@@ -4,7 +4,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { base, mainnet } from 'wagmi/chais' 
-// FIXED: Remove the invalid import of WagmiWeb3Modal
+// FIXED: Remove the invalid import of WagmiWeb3Moda
 import { createWeb3Modal } from '@web3modal/wagmi'
 
 // --- Configuration Setup ---
