@@ -8,7 +8,7 @@ import { ERC20_ABI } fr '../../src/constants/erc20abi';
 import { parseUnits, fornits, isAddress } from 'viem';
 import { ChevronDown, X, Search, DollarSign } from 'lucide-react'; 
 
-// Configure Ahemy (Make sure NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
+// Configure Ahemy (Make s NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
 const alchemyConfig = {
   apiKey: proce.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
   network Network.BASE_MAINNET, 
