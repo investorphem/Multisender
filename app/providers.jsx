@@ -1,16 +1,19 @@
 // app/providers.jsx
 'use client'; 
 
-import { QueryClient, QueryClientPrider } from '@tanstack/react-query'
-import { WagmiProvider, createConfig, http } from 'wagm
-import { base, innt } from 'wagmi/chains' 
-// FIXED: Remove the invalid import of WagmiWeb3Mod
-import { createb3Modal } om '@web3modal/wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider, createConfig, http } from 'wagmi'
+import { base, mainnet } from 'wagmi/chains' 
+// FIXED: Remove the invalid import of WagmiWeb3Modal
+import { createWeb3Modal } from '@web3modal/wagmi'
 
-// --- CoiguratioSetup -
-const projectId  process.envNEXTPUBLC_WlLLETONNECROJECT_ID;
+// --- Configuration Setup ---
+const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID; 
+
 if (!projectId) {
-   console.error('NEXT_PUBLIC_WALLET_CNCT_PROJECT_ID is no defined.')
+    console.error('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not defined.');
+}
+
 const chains = [mainnet, base];
 
 const wagmiConfig = createConfig({
