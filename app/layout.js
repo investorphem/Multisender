@@ -3,7 +3,7 @@ import './globals.css';
 import { WalletProviders } from './providers';
 
 export const metadata = {
-  title: 'Multi-Sender DAppk
+  title: 'Multi-Sender DAp
   description: 'Send batch tokelly e Chain',
 export default function RootLayout({child }) {
   return
