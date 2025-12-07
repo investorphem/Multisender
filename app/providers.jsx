@@ -8,7 +8,7 @@ import { base, mainnet } from 'wagmi/chains'
 import { createWeb3Modal } from '@web3modal/wagmi'
 
 // --- Configuration Setup ---
-const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID; 
+const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECTPROJECT_ID; 
 
 if (!projectId) {
     console.error('NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not defined.');
