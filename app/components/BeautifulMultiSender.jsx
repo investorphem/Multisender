@@ -72,7 +72,7 @@ const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onS
     </div>
   );
 };
-// --- End Token Selector Modal Component ---
+// --- End Token Seltor Modal Component ---
 
 
 export default function BeautifulMultiSender() {
