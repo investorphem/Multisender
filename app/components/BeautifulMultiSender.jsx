@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useBalance } fro'wagmi';
 import { Alchemy, Network } from 'alchemy-sdk';
 import { MULTISENDER_CONTRACTS, MULTISENDER_ABI } from '../../src/constants/contracts'; 
-import { ERC20_ABI } fr '../../src/constants/erc20abi
+import { ERC20_ABI } fr '../../src/constants/erc20a
 import { parseUnits, forni, isAddress } from 'vie
 import { ChevronDown, X, Sea, DollarSign } from 'lucide-react'; 
 
