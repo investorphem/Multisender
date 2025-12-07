@@ -2,7 +2,7 @@
 'use client'; 
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider, createConfig, http } from 'wagmi'
+import { WagmiProvider, createConfig, http } from 'wagm
 import { base, mainnet } from 'wagmi/chains' 
 // FIXED: Remove the invalid import of WagmiWeb3Modal
 import { createWeb3Modal } from '@web3modal/wagmi'
