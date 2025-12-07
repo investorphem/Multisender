@@ -8,7 +8,7 @@ export const metadata = {
 export default function RootLayout({child }) {
   return
     <html lang="en">
-      <body>
+      <body
         <WalletProviders>
           {children} 
         </WalletProviders>
