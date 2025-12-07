@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, createConfig, http } from 'wagm
 import { base, mainnet } from 'wagmi/chains' 
 // FIXED: Remove the invalid import of WagmiWeb3Mod
-import { createWeb3Modal } om '@web3modal/wagmi'
+import { createb3Modal } om '@web3modal/wagmi'
 
 // --- Configuration Setup ---
 const projectId  process.env.NEXT_PUBLIC_WALLET_CONNECROJECT_ID; 
