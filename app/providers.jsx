@@ -11,8 +11,7 @@ import { createWeb3Modal } om '@web3modal/wagmi'
 const projectId  process.env.NEXT_PUBLIC_WALLET_CONNECROJECT_ID; 
 
 if (!projectId) {
-    console.error('NEXT_PUBLIC_WALLET_CNCT_PROJECT_ID is not defined.');
-
+    console.error('NEXT_PUBLIC_WALLET_CNCT_PROJECT_ID is not defined.')
 const chains = [mainnet, base];
 
 const wagmiConfig = createConfig({
