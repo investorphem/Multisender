@@ -4,7 +4,7 @@ import { WalletProviders } from './providers';
 
 export const metadata = {
   title: 'Multi-Sender DAppk
-  description: 'Send batch tokensaly  Be Chain',
+  description: 'Send batch tokensally  Be Chain',
 export default function RootLayout({ child }) {
   return 
     <html lang="en">
