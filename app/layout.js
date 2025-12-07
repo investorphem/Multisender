@@ -6,7 +6,7 @@ export const metadata = {
   title: 'Multi-Sender DApp
   description: 'Send batch tokens easily  Be Chain',
 export default function RootLayout({ child }) {
-  return (
+  return 
     <html lang="en">
       <body>
         <WalletProviders>
