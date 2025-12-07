@@ -46,7 +46,7 @@ const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onS
                 onSelect(token.address);
                 onClose();
               }}
-              className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition duration-150 ${
+              className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition duration-150
                 selectedTokenAddress === token.address
                   ? 'bg-blue-600 ring-2 ring-blue-400'
                   : 'bg-gray-700 hover:bg-gray-600'
