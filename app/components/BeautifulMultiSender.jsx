@@ -1,20 +1,21 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useBalance } fro'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useBalance } from 'wagmi';
 import { Alchemy, Network } from 'alchemy-sdk';
-import { MULTISENDER_CONTRACTS, MULTISENDER_ABI } from '../../src/constan/contracts'; 
-import { ERC20_ABI } fr '../../src/constants/erc20a
-import { parseUnits, forniisAddress } from 'vie
-import { ChevronDown, X, Sea, DollarSign } from 'lucide-react'; 
+import { MULTISENDER_CONTRACTS, MULTISENDER_ABI } from '../../src/constants/contracts'; 
+import { ERC20_ABI } from '../../src/constants/erc20abi';
+import { parseUnits, formatUnits, isAddress } from 'viem';
+import { ChevronDown, X, Search, DollarSign } from 'lucide-react'; 
 
-// Configure Ahemy (Make s NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
+// Configure Alchemy (Make sure NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
 const alchemyConfig = {
-  apiKey: proce.env.NEXT_PUBL_ALCHEMY_API_KEY,
-  network Network.BASE_MAINNET, 
+  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
+  network: Network.BASE_MAINNET, 
 };
-const alchemy = new Alchemy(alchemyConfig)
-// --- Token Selector Modal Component (UI remains the same) -
+const alchemy = new Alchemy(alchemyConfig);
+
+// --- Token Selector Modal Component (UI remains the same) ---
 const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onSelect, searchTerm, onSearchChange }) => {
   if (!isOpen) return null;
   return (
@@ -26,7 +27,7 @@ const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onS
             <X className="w-6 h-6" />
           </button>
         </div>
-        
+
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
@@ -46,7 +47,7 @@ const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onS
                 onSelect(token.address);
                 onClose();
               }}
-              className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition duration-150
+              className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition duration-150 ${
                 selectedTokenAddress === token.address
                   ? 'bg-blue-600 ring-2 ring-blue-400'
                   : 'bg-gray-700 hover:bg-gray-600'
@@ -72,7 +73,7 @@ const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onS
     </div>
   );
 };
-// --- End Token Seltor Modal Component ---
+// --- End Token Selector Modal Component ---
 
 
 export default function BeautifulMultiSender() {
@@ -176,10 +177,10 @@ export default function BeautifulMultiSender() {
     if (!contractAddress || !selectedToken || selectedTokenAddress === 'NATIVE') { 
         return setStatusMessage("Cannot approve native tokens or contract address is missing."); 
     }
-    
+
     // Use the value already calculated and stored in state
     const amountToApprove = totalAmountNeeded; 
-    
+
     if (amountToApprove === 0n) return;
 
     if (selectedToken.balanceRaw < amountToApprove) {
@@ -187,7 +188,7 @@ export default function BeautifulMultiSender() {
     }
 
     setStatusMessage(`Requesting approval for ${formatUnits(amountToApprove, selectedToken.decimals)} ${selectedToken.symbol}...`);
-    
+
     console.log("Attempting Approval with parameters:", {
         tokenAddress: selectedTokenAddress,
         spenderAddress: contractAddress,
@@ -205,14 +206,14 @@ export default function BeautifulMultiSender() {
 
   const handleSubmit = async () => {
     if (!isConnected || !selectedToken) return setStatusMessage("Wallet disconnected or token not selected.");
-    
+
     // Use the value already calculated and stored in state
     const amountToSend = totalAmountNeeded;
-    
+
     if (amountToSend === 0n) return setStatusMessage("Please enter valid recipients and amounts.");
     if (selectedTokenAddress === 'NATIVE') return setStatusMessage("Native ETH sending is not implemented in this version.");
     if (!isApproved) return setStatusMessage("Please complete step 1: Approve the contract to move your tokens.");
-    
+
     // Recalculate full data structure for the actual contract call arguments
     const parsedData = (listContent) => {
         const lines = listContent.trim().split('\n');
@@ -239,7 +240,7 @@ export default function BeautifulMultiSender() {
       args: [selectedTokenAddress, finalArgs.recipients, finalArgs.amounts],
     });
   };
-  
+
   // ... (UI effects and helper functions remain the same) ...
   useEffect(() => {
     if (isApprovalConfirmed) { setIsApproved(true); setStatusMessage("Approval successful! You can now proceed to Step 2: Execute Batch Send."); }
@@ -264,7 +265,7 @@ export default function BeautifulMultiSender() {
       if (isSending || isConfirming || isApproving || isApprovalConfirming) return `${base} bg-blue-900`;
       return `${base} bg-gray-700`;
   };
-  
+
   const getButtonClasses = (isMainButton = false) => {
     const base = "mt-4 w-full font-bold p-3 rounded-lg transition duration-150 ease-in-out shadow-lg";
     const hasValidInput = totalAmountNeeded > 0n; 
@@ -312,7 +313,7 @@ export default function BeautifulMultiSender() {
                     <ChevronDown className="w-4 h-4 ml-2" />
                 </button>
             </div>
-            
+
             <TokenSelectorModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -329,7 +330,7 @@ export default function BeautifulMultiSender() {
               value={recipientList}
               onChange={handleListChange}
             />
-            
+
             {/* Step 1: Approval Button (Conditional Display, now correctly reacting to input) */}
             {selectedTokenAddress && selectedTokenAddress !== 'NATIVE' && !isApproved && totalAmountNeeded > 0n && (
                 <button
