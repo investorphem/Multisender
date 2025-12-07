@@ -10,7 +10,7 @@ import { ChevronDown, X, Sea, DollarSign } from 'lucide-react';
 
 // Configure Ahemy (Make s NEXT_PUBLIC_ALCHEMY_API_KEY is set in .env.local)
 const alchemyConfig = {
-  apiKey: proce.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
+  apiKey: proce.env.NEXT_PUBL_ALCHEMY_API_KEY,
   network Network.BASE_MAINNET, 
 };
 const alchemy = new Alchemy(alchemyConfig);
