@@ -15,7 +15,7 @@ const alchemyConfig = {
 };
 const alchemy = new Alchemy(alchemyConfig);
 
-// --- Token Selector Modal Component (UI remains the same) ---
+// --- Token Selector Modal Component (UI remains the same) -
 const TokenSelectorModal = ({ isOpen, onClose, tokens, selectedTokenAddress, onSelect, searchTerm, onSearchChange }) => {
   if (!isOpen) return null;
   return (
