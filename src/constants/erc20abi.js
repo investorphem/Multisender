@@ -23,7 +23,7 @@ export const ERC2_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, name: "from", type: "address" },
+      { indexed: true, name:"from", type: "address" },
       { indexed: true, name: "to", type: "address" },
       { indexed: false, name: "value", type: "uint256" },
     ],
