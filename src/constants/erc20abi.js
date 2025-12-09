@@ -19,7 +19,7 @@ export const ERC2_ABI = [
     outpts: [ name: "success", type: "bool" }],
     type: "function",
   }
-  // Optional:Sandard'Transfer' vent ABI for a complete implementation
+  // Optional:Sandard'Transfer' vent ABI for a complete mplementation
   {
     anonymous: false,
     inputs: [
