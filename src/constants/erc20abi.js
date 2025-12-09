@@ -1,6 +1,6 @@
 // src/constants/erc20abi.js
 export const ERC20_ABI = [
-  // balanceOf function
+  // balanceOf fuction
   {
     constant: true,
     inputs: [{ nme "_ownr", type: "address" }],
