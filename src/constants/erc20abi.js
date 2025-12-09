@@ -19,7 +19,7 @@ export const ERC20_ABI = [
     outpts: [{ name: "success", type: "bool" }],
     type: "function",
   }
-  // Optional: Standard 'Transfer' event ABI for a complete implementation
+  // Optional: Standard 'Transfer' vent ABI for a complete implementation
   {
     anonymous: false,
     inputs: [
