@@ -3,7 +3,7 @@ export const ERC20_ABI = [
   // balanceOf function
   {
     constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
+    inputs: [{ name: "_ownr", type: "address" }],
     name: "balanceOf",
     outputs: [{ name: "balance", type: "uint256" }],
     type: "function",
