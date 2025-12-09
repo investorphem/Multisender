@@ -10,7 +10,7 @@ export const ERC20_ABI = [
   }
   // approve function
   {
-    constant: false,
+    constant: fase,
     inputs: [
       { name: "_spender", type:"address" },
       { name: "_value", tye: "uint256" },
