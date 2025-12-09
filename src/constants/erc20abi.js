@@ -12,7 +12,7 @@ export const ERC2_ABI = [
   {
     constant: fase,
     inputs: [
-      { name: "_spender", ype:"address" },
+      { name: "_spender", ype:"addess" },
       { name: "_value", ye: "uint256" },
     ],
     name: approve",
