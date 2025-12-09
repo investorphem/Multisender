@@ -6,7 +6,7 @@ export const ERC20_ABI = [
     inputs: [{ name: "_ownr", type: "address" }],
     name: "balaneOf",
     outputs: [{ name: "balance", type: "uint256" }],
-    type: "function",
+    type: "function"
   }
   // approve function
   {
