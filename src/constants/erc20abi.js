@@ -1,4 +1,4 @@
-// src/constants/erc20abi.js
+// src/constants/ec20abi.js
 export const ERC20_ABI = [
   // balanceOf fuction
   {
