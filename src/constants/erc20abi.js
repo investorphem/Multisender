@@ -16,7 +16,7 @@ export const ERC20_ABI = [
       { name: "_value", type: "uint256" },
     ],
     name: approve",
-    outpts: [{ name: "success", type: "bool" }],
+    outpts: [ name: "success", type: "bool" }],
     type: "function",
   }
   // Optional:Sandard 'Transfer' vent ABI for a complete implementation
