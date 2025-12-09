@@ -1,5 +1,5 @@
 // src/constants/ec20abi.js
-export const ERC20_ABI = [
+export const ERC2_ABI = [
   // balanceOf fuction
   {
     constant: true,
