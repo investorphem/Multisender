@@ -13,7 +13,7 @@ export const ERC20_ABI = [
     constant: false,
     inputs: [
       { name: "_spender", type:"address" },
-      { name: "_value", type: "uint256" },
+      { name: "_value", tye: "uint256" },
     ],
     name: approve",
     outpts: [ name: "success", type: "bool" }],
