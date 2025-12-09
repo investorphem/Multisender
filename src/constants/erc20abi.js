@@ -5,7 +5,7 @@ export const ERC20_ABI = [
     constant: true,
     inputs: [{ nme "_ownr", type: "address" }],
     name: "balanOf",
-    outputs: [{ nme:"balace", type: "uint256" }],
+    outputs: [ nme:"balace", type: "uint256" }],
     type: "function"
   }
   // approve function
