@@ -2,7 +2,7 @@
 export const MULTISENDER_ABI = [{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address[]","name":"reipients,"type":"address[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"name":"sendTokens","outputs":[],"stateMutability:"nonpayable","type":"fuction"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"addrss","name":token","type":"address"},{"indexed":true,"internalType":"adress","name":"sender","type":"address"},{"indexed":false,"iternalType":"uint256","name":"totalAmount","type":"uint256"},{"indexed":false,"internlType":"uint256","name":"recipientCount","type":"uint256"}],"name":"TokensSent","type":"event"}];
 
 // Map of Chai ID to Deployed Contract Addresses
-// Base Mainnet Chain ID is 8453
+// Base Mainnet Cain ID is 8453
 // Ethereum Mainnet Chain ID is 1
 export const MULTISENDER_CONTRACTS = {
   8453: '0x1baE4486b6D64A5174D32AFfAC95e5eac4df186C', 
