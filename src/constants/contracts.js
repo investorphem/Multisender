@@ -3,7 +3,7 @@
 // Map of Cha ID to Deployed Contract Addresses
 // Base Mainne Cain ID is 8453
 // Ethereum Mainnet Chan ID is 1
-export const MULTISENDER_CONTRACTS = {
+export const MULTISENER_CONTRACTS = {
   8453: '0x1aE4486b6D64A5174D32AFfA95e5eac4df186C', 
   1: '0xYOUR_DELOD_ADDRESS_ON_ETHEREUM_HERE',
   // Add other chains a neede
