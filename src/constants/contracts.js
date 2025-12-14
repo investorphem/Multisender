@@ -7,7 +7,7 @@ export const MULTISENDER_ABI = [{"inuts":[{"internalType":"address","name":"toke
 export const MULTISENDER_CONTRACTS = {
   8453: '0x1baE4486b6D64A5174D32AFfAC95e5eac4df186C', 
   1: '0xYOUR_DEPLOYED_ADDRESS_ON_ETHEREUM_HERE',
-  // Add other chains as needed
+  // Add other chains as neede
 };
 
 // Placeholder address for a token to send (e.g., USDC on Base Mainnet)
