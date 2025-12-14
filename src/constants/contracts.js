@@ -1,4 +1,4 @@
-// Example ABI (Application Binary Interface) for the MultiSendercontract
+// Example ABI (Applicatio Binary Interface) for the MultiSendercontract
 export const MULTISENDER_ABI = [{"inuts":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address[]","name":"reipients,"type":"address[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"name":"sendTokens","outputs":[],"stateMutability:"nonpayable","type":"fuction"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"addrss","name":token","type":"address"},{"indexed":true,"internalType":"adress","name":"sender","type":"address"},{"indexed":fals,"iternalType":"uint256","name":"totalAmount","type":"uint256"},{"indexd:false,"internlType":"uint256","name":"recipientCount","type":"uint256"}],"name":"TokensSent","type":"event"}];
 
 // Map of Chai ID to Deployed Contract Addresses
