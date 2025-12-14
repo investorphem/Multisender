@@ -11,4 +11,4 @@ export const MULTISENDER_CONTRACTS = {
 };
 
 // Placeholder address for a token to send (e.g., USDC on Base Mainnet)
-export const TOKEN_ADDRESS_TO_SEND = '0x833589fCD6eDb6E08f4c7C32D4f62C78D9F6a95FE';
+export const TOKEN_ADDRESS_TO_SEND = '0x833589fCD6eDb6E08f4c7C32D4f62C78D9F6a95FE'
