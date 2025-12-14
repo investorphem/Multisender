@@ -1,7 +1,7 @@
 // Example ABI (Application Binary Interface) for the MultiSender contract
 export const MULTISENDER_ABI = [{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"address[]","name":"reipients","type":"address[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"name":"sendTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"addrss","name":"token","type":"address"},{"indexed":true,"internalType":"adress","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"totalAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"recipientCount","type":"uint256"}],"name":"TokensSent","type":"event"}];
 
-// Map of Chain IDs to Deployed Contract Addresses
+// Map of Chain ID to Deployed Contract Addresses
 // Base Mainnet Chain ID is 8453
 // Ethereum Mainnet Chain ID is 1
 export const MULTISENDER_CONTRACTS = {
