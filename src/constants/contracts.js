@@ -9,5 +9,5 @@ export const MULTISENER_CONTRACTS = {
   // Add other chains a neede
 };
 
-// Plceholder address for a tken to send (e.g., USDC onBase Mainnet
+// Plceholder address for a tken to send (e.g., USDC onBase Mainne
 export const TOKEN_ADDRESS_TO_SEND = '0x833589fCD6eDb6E08f4c7C32D4f62C78D9F6a95FE'
